@@ -1,0 +1,54 @@
+tr.running td {
+  background-color: #fff3bb;
+}
+tr.passed td {
+  background-color: #cdffc4;
+}
+tr.failed td {
+  background-color: #fcb4c6;
+}
+tr.skipped td {
+  background-color: #b4f3fc;
+}
+
+.check {
+  display: inline-block;
+  box-sizing: border-box;
+  width: 14px;
+  height: 14px;
+  line-height: 14px;
+  padding: 0;
+  text-align: center;
+}
+
+.cross {
+  display: inline-block;
+  box-sizing: border-box;
+  width: 14px;
+  height: 14px;
+  line-height: 14px;
+  padding: 0;
+  text-align: center;
+}
+.spin {
+  animation-name: spin;
+  animation-duration: 0.7s;
+  animation-iteration-count: infinite;
+  animation-timing-function: linear;
+  display: inline-block;
+  box-sizing: border-box;
+  width: 14px;
+  height: 14px;
+  line-height: 14px;
+  padding: 0;
+  text-align: center;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}

@@ -1,0 +1,42 @@
+{
+  "name": "testillery",
+  "version": "0.0.1",
+  "description": "Simple in-browser javascript testing",
+  "files": [
+    "dist/testillery.js",
+    "dist/testillery.d.ts"
+  ],
+  "main": "dist/testillery.js",
+  "module": "dist/testillery.js",
+  "types": "dist/testillery.d.ts",
+  "scripts": {
+    "start": "rollup -c -w",
+    "build": "rollup -c"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zaceno/testillery.git"
+  },
+  "keywords": [
+    "test",
+    "javascript"
+  ],
+  "author": "Zacharias Enochsson",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/zaceno/testillery/issues"
+  },
+  "homepage": "https://github.com/zaceno/testillery#readme",
+  "devDependencies": {
+    "hyperapp": "^2.0.20",
+    "@rollup/plugin-typescript": "^8.3.0",
+    "rollup": "^2.67.2",
+    "rollup-plugin-dts": "^4.1.0",
+    "rollup-plugin-esbuild": "^4.8.2",
+    "rollup-plugin-live-server": "^2.0.0",
+    "rollup-plugin-node-resolve": "^5.2.0",
+    "rollup-plugin-terser": "^7.0.2",
+    "rollup-plugin-postcss": "^4.0.2",
+    "typescript": "^4.5.5"
+  }
+}
