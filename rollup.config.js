@@ -29,21 +29,45 @@ const build = () => [
   },
 ]
 
-const dev = () => ({
-  input: "src/index.ts",
-  output: [
-    {
-      file: "dist/testillery.js",
-      format: "es",
-      sourcemap: true,
-    },
-  ],
-  plugins: [
-    postcss(),
-    typescript({ tsconfig: "./tsconfig.json" }),
-    resolve(),
-    liveServer(),
-  ],
-})
+const dev = () => [
+  {
+    input: "src/index.ts",
+    output: [
+      {
+        file: "dist/testillery.js",
+        format: "es",
+        sourcemap: true,
+      },
+    ],
+    plugins: [
+      postcss(),
+      typescript({ tsconfig: "./tsconfig.json" }),
+      resolve(),
+    ],
+  },
+  {
+    input: "./dist/dts/index.d.ts",
+    external: [/\.css$/],
+    output: [{ file: "dist/testillery.d.ts", format: "es" }],
+    plugins: [dts()],
+  },
+  {
+    input: "src/metarunner.ts",
+    output: [
+      {
+        file: "dist/metarunner.js",
+        format: "es",
+        sourcemap: true,
+      },
+    ],
+    plugins: [
+      resolve(),
+      typescript({ tsconfig: "./tsconfig.json" }),
+      liveServer({
+        ignore: "dist/dts",
+      }),
+    ],
+  },
+]
 
 export default process.env.ROLLUP_WATCH == "true" ? dev() : build()

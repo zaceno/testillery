@@ -3,7 +3,8 @@
     "target": "esnext",
     "moduleResolution": "node",
     "strict": true,
-    "declarationDir": "dts/",
+    "declarationDir": "dts",
     "declaration": true
-  }
+  },
+  "exclude": ["dist/**/*"]
 }

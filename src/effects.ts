@@ -7,7 +7,7 @@ import {
 } from "./actions"
 import { Dispatch } from "hyperapp"
 
-import { getAssert, AssertionError, Asserter } from "./assert"
+import { getAssert, Asserter } from "./assert"
 
 const TIMEOUT = 5000
 
@@ -25,30 +25,28 @@ export const testRun = (
   dispatch: Dispatch<import("./actions").State>,
   test: TestRunProps
 ) => {
-  new Promise((resolve, reject) => {
-    requestAnimationFrame(async () => {
-      dispatch(StartTest, test.id)
-      if (test.func.constructor.name === "AsyncFunction") {
-        setTimeout(
-          () => reject(`Test did not end within ${TIMEOUT}ms`),
-          TIMEOUT
-        )
+  const pass = () => dispatch(PassTest, test.id)
+  const fail = (message: string) => dispatch(FailTest, { id: test.id, message })
+  queueMicrotask(() => {
+    dispatch(StartTest, test.id)
+    if (test.func.constructor.name === "AsyncFunction") {
+      new Promise((resolve, reject) => {
+        setTimeout(() => reject(`Test did not end within ${TIMEOUT}`), TIMEOUT)
         test.func(getAssert(reject), () => {
           resolve(true)
         })
-      } else {
-        try {
-          test.func(getAssert())
-          resolve(true)
-        } catch (e) {
-          if (!(e instanceof AssertionError)) throw e
-          reject(e.message)
-        }
+      })
+        .then(pass)
+        .catch(fail)
+    } else {
+      try {
+        test.func(getAssert())
+        pass()
+      } catch (e) {
+        fail("" + e)
       }
-    })
+    }
   })
-    .then(() => dispatch(PassTest, test.id))
-    .catch(message => dispatch(FailTest, { id: test.id, message }))
 }
 
 type PlainTester = (name: string, func: Test) => void

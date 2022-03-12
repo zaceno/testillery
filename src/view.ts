@@ -1,4 +1,4 @@
-import { h, text } from "hyperapp"
+import { h, text, ElementVNode } from "hyperapp"
 
 const testResult = ({ status, name, id, message }: import("./actions").ATest) =>
   h(
@@ -88,4 +88,4 @@ export default ({ suites, tests: allTests }: State) =>
       if (!tests.length) return false
       return h("section", {}, [h("h2", {}, text(name)), testList({ tests })])
     }),
-  ])
+  ]) as ElementVNode<State>
