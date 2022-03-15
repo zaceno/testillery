@@ -10,6 +10,65 @@ tr.failed td {
 tr.skipped td {
   background-color: #b4f3fc;
 }
+/*
+return h(
+    "div",
+    {
+      style: {
+        height: "15px",
+        width: "100%",
+        backgroundColor: "#ffc",
+        position: "relative",
+      },
+    },
+    [
+      h("div", {
+        style: {
+          position: "absolute",
+          right: "0",
+          top: "0",
+          height: "15px",
+          width: `${percentFailed}%`,
+          backgroundColor: "#fcc",
+        },
+      }),
+      h("div", {
+        style: {
+          position: "absolute",
+          left: "0",
+          top: "0",
+          height: "15px",
+          width: `${percentPassed}%`,
+          backgroundColor: "#cfc",
+        },
+      }),
+    ]
+  )
+}
+*/
+
+.progressContainer {
+  height: 15px;
+  width: 100%;
+  background-color: #ffc;
+  position: relative;
+}
+.progressFailed {
+  position: absolute;
+  right: 0;
+  top: 0;
+  height: 15px;
+  width: 0;
+  background-color: #fcc;
+}
+.prgressPassed {
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 15px;
+  width: 0;
+  background-color: #cfc;
+}
 
 .check {
   display: inline-block;

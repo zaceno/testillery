@@ -1,6 +1,8 @@
 import { h, text, ElementVNode } from "hyperapp"
 
-const testResult = ({ status, name, id, message }: import("./actions").ATest) =>
+import { Test, State } from "./actions"
+
+const testResult = ({ status, name, id, message }: Test) =>
   h(
     "tr",
     {
@@ -25,7 +27,7 @@ const testResult = ({ status, name, id, message }: import("./actions").ATest) =>
   )
 
 type TestListProps = {
-  tests: State["tests"]
+  tests: Test[]
 }
 const testList = ({ tests }: TestListProps) =>
   h("table", {}, [
@@ -43,42 +45,17 @@ const summaryBar = ({ tests }: TestListProps) => {
   const passed = tests.filter(t => t.status === "passed").length
   const percentFailed = total === 0 ? 0 : Math.round((failed / total) * 100)
   const percentPassed = total === 0 ? 0 : Math.round((passed / total) * 100)
-  return h(
-    "div",
-    {
-      style: {
-        height: "15px",
-        width: "100%",
-        backgroundColor: "#ffc",
-        position: "relative",
-      },
-    },
-    [
-      h("div", {
-        style: {
-          position: "absolute",
-          right: "0",
-          top: "0",
-          height: "15px",
-          width: `${percentFailed}%`,
-          backgroundColor: "#fcc",
-        },
-      }),
-      h("div", {
-        style: {
-          position: "absolute",
-          left: "0",
-          top: "0",
-          height: "15px",
-          width: `${percentPassed}%`,
-          backgroundColor: "#cfc",
-        },
-      }),
-    ]
-  )
+  return h("div", { class: "progressContainer" }, [
+    h("div", {
+      class: "progressFailed",
+      style: { width: `${percentFailed}%` },
+    }),
+    h("div", {
+      class: "progressPassed",
+      style: { width: `${percentPassed}%` },
+    }),
+  ])
 }
-
-type State = import("./actions").State
 
 export default ({ suites, tests: allTests }: State) =>
   h("main", {}, [

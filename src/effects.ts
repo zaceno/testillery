@@ -1,38 +1,31 @@
-import {
-  PassTest,
-  FailTest,
-  RunTests,
-  StartTest,
-  RegisterTest,
-} from "./actions"
-import { Dispatch } from "hyperapp"
-
-import { getAssert, Asserter } from "./assert"
-
+import { Dispatch, Action, Effect } from "hyperapp"
+import { getAssert, Assert } from "./assert"
 const TIMEOUT = 5000
 
-export type PreStatus = "run" | "only" | "skipped"
+export type TestFn = (assert: Assert, done?: () => void) => void | Promise<void>
 
-export type Test = (assert: Asserter, done?: () => void) => void
-
-type TestRunProps = {
+type TestRunProps<S> = {
   id: number
-  func: Test
+  func: TestFn
   suite: number
+  Start: Action<S, number>
+  Pass: Action<S, number>
+  Fail: Action<S, { id: number; message: string }>
 }
 
-export const testRun = (
-  dispatch: Dispatch<import("./actions").State>,
-  test: TestRunProps
-) => {
-  const pass = () => dispatch(PassTest, test.id)
-  const fail = (message: string) => dispatch(FailTest, { id: test.id, message })
+const _testRun = <S>(dispatch: Dispatch<S>, props: TestRunProps<S>) => {
+  const pass = () => {
+    dispatch(props.Pass, props.id)
+  }
+  const fail = (message: string) => {
+    dispatch(props.Fail, { id: props.id, message })
+  }
   queueMicrotask(() => {
-    dispatch(StartTest, test.id)
-    if (test.func.constructor.name === "AsyncFunction") {
+    dispatch(props.Start, props.id)
+    if (props.func.constructor.name === "AsyncFunction") {
       new Promise((resolve, reject) => {
         setTimeout(() => reject(`Test did not end within ${TIMEOUT}`), TIMEOUT)
-        test.func(getAssert(reject), () => {
+        props.func(getAssert(reject), () => {
           resolve(true)
         })
       })
@@ -40,7 +33,7 @@ export const testRun = (
         .catch(fail)
     } else {
       try {
-        test.func(getAssert())
+        props.func(getAssert())
         pass()
       } catch (e) {
         fail("" + e)
@@ -49,21 +42,39 @@ export const testRun = (
   })
 }
 
-type PlainTester = (name: string, func: Test) => void
-type Tester = PlainTester & { skip: PlainTester; only: PlainTester }
+export const testRun = <S>(
+  props: TestRunProps<S>
+): Effect<S, TestRunProps<S>> => [_testRun, props]
 
-export type Suite = (test: Tester) => void
-type SuiteRunProps = { func: Suite; id: number }
+export type RegistrationStatus = "run" | "skipped" | "only"
+type PlainTest = (name: string, test: TestFn) => void
+type Test = PlainTest & { skip: PlainTest; only: PlainTest }
+export type SuiteFn = (test: Test) => void
 
-export const suiteRun = (
-  dispatch: Dispatch<import("./actions").State>,
-  { func, id: suiteid }: SuiteRunProps
-) => {
-  const _test = (name: string, tfn: Test, status: PreStatus) =>
-    dispatch(RegisterTest, { name, func: tfn, suite: suiteid, status })
-  const test: PlainTester = (name, tfn) => _test(name, tfn, "run")
-  const skip: PlainTester = (name, tfn) => _test(name, tfn, "skipped")
-  const only: PlainTester = (name, tfn) => _test(name, tfn, "only")
-  func(Object.assign(test, { skip, only }))
-  dispatch(RunTests)
+type SuiteTestProps = {
+  func: TestFn
+  suite: number
+  name: string
+  status: RegistrationStatus
 }
+
+type SuiteRunProps<S> = {
+  func: SuiteFn
+  id: number
+  Register: Action<S, SuiteTestProps>
+  Run: Action<S, void>
+}
+
+const _suiteRun = <S>(dispatch: Dispatch<S>, props: SuiteRunProps<S>) => {
+  const _test = (name: string, func: TestFn, status: RegistrationStatus) =>
+    dispatch(props.Register, { name, func, suite: props.id, status })
+  const test: PlainTest = (name, func) => _test(name, func, "run")
+  const skip: PlainTest = (name, func) => _test(name, func, "skipped")
+  const only: PlainTest = (name, func) => _test(name, func, "only")
+  props.func(Object.assign(test, { skip, only }))
+  dispatch(props.Run)
+}
+
+export const suiteRun = <S>(
+  props: SuiteRunProps<S>
+): Effect<S, SuiteRunProps<S>> => [_suiteRun, props]

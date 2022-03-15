@@ -7,6 +7,5 @@ document.body.appendChild(node)
 export default getSuiteRunner({
   node,
   view,
-  //@ts-ignore
-  subscriptions: () => [[scrollPos]],
+  subscriptions: () => [[scrollPos, {}]],
 })

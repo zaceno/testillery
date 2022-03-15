@@ -1,18 +1,28 @@
-import { suiteRun, testRun, Test, PreStatus } from "./effects"
+import {
+  suiteRun,
+  testRun,
+  RegistrationStatus,
+  TestFn,
+  SuiteFn,
+} from "./effects"
 import { Action } from "hyperapp"
-type Status = PreStatus | "running" | "passed" | "failed"
-export type ASuite = { name: string; id: number }
-export type ATest = {
+
+export type RunStatus = "running" | "passed" | "failed"
+
+export type Suite = { name: string; id: number }
+
+export type Test = {
   name: string
-  func: Test
+  func: TestFn
   id: number
   suite: number
-  status: Status
+  status: RegistrationStatus | RunStatus
   message?: string
 }
+
 export type State = {
-  tests: ATest[]
-  suites: ASuite[]
+  tests: Test[]
+  suites: Suite[]
   id: number
 }
 
@@ -36,7 +46,16 @@ export const RunTests: Action<State, any> = state => {
   }
   return [
     { ...state, tests },
-    ...tests.filter(t => t.status === "run").map(t => [testRun, t] as const),
+    ...tests
+      .filter(t => t.status === "run")
+      .map(t =>
+        testRun({
+          ...t,
+          Start: StartTest,
+          Pass: PassTest,
+          Fail: FailTest,
+        })
+      ),
   ]
 }
 
@@ -44,15 +63,19 @@ export const BeginSuite: Action<
   State,
   {
     name: string
-    func: import("./effects").Suite
+    func: SuiteFn
   }
 > = (state, { name, func }) => {
   let id = state.id + 1
   let suites = [...state.suites, { id, name }]
-  return [{ ...state, id, suites }, [suiteRun, { func, id }]]
+  return [
+    { ...state, id, suites },
+    suiteRun({ func, id, Register: RegisterTest, Run: RunTests }),
+  ]
 }
 
 export const StartTest: Action<State, number> = (state, id) => {
+  console.log("STARTING TEST", id)
   let tests = state.tests.map(t => {
     if (t.id !== id) return t
     return { ...t, status: "running" as const }
@@ -63,10 +86,10 @@ export const StartTest: Action<State, number> = (state, id) => {
 export const RegisterTest: Action<
   State,
   {
-    func: Test
+    func: TestFn
     name: string
     suite: number
-    status: Status
+    status: RegistrationStatus
   }
 > = (state, props) => {
   let id = state.id + 1
