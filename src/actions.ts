@@ -75,7 +75,6 @@ export const BeginSuite: Action<
 }
 
 export const StartTest: Action<State, number> = (state, id) => {
-  console.log("STARTING TEST", id)
   let tests = state.tests.map(t => {
     if (t.id !== id) return t
     return { ...t, status: "running" as const }
